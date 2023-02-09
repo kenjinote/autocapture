@@ -11,7 +11,7 @@
 
 #define MYWM_NOTIFYICON (WM_APP+100)
 #define TRAY_ID 1
-WCHAR szClassName[] = L"Window";
+WCHAR szClassName[] = L"AutoCapture";
 using namespace Gdiplus;
 
 int GetEncoderClsid(WCHAR* format, CLSID* pClsid)
@@ -34,9 +34,8 @@ int GetEncoderClsid(WCHAR* format, CLSID* pClsid)
 	return -1;
 }
 
-int GetScreeny(LPWSTR lpszFilename, WCHAR* format, ULONG uQuality) // by Napalm
+int GetScreeny(HWND hMyWnd, LPWSTR lpszFilename, WCHAR* format, ULONG uQuality) // by Napalm
 {
-	HWND hMyWnd = GetForegroundWindow(); // get my own window
 	RECT  r;                             // the area we are going to capture 
 	int w, h;                            // the width and height of the area
 	HDC dc;                              // the container for the area
@@ -183,7 +182,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			tnd.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
 			tnd.uCallbackMessage = MYWM_NOTIFYICON;
 			tnd.hIcon = LoadIcon(GetModuleHandle(0), MAKEINTRESOURCE(IDI_ICON1));
-			lstrcpyn(tnd.szTip, L"ここ", sizeof(tnd.szTip));
+			lstrcpyn(tnd.szTip, szClassName, sizeof(tnd.szTip));
 			Shell_NotifyIcon(NIM_ADD, &tnd);
 			// タイマースタート
 			if (dwTimeSpan > 0) {
@@ -227,27 +226,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			str = ReplaceString(str.c_str(), L"%m", szMinute);
 			str = ReplaceString(str.c_str(), L"%s", szSecond);
 			PathAppend(szFilePath, str.c_str());
+			HWND hDesktop = GetDesktopWindow();
 			switch (dwFileType)
 			{
 			case 0:
 				PathAddExtension(szFilePath, L".png");
-				GetScreeny(szFilePath, L"image/png", 50);
+				GetScreeny(hDesktop, szFilePath, L"image/png", 50);
 				break;
 			case 1:
 				PathAddExtension(szFilePath, L".jpg");
-				GetScreeny(szFilePath, L"image/jpeg", 50);
+				GetScreeny(hDesktop, szFilePath, L"image/jpeg", 50);
 				break;
 			case 2:
 				PathAddExtension(szFilePath, L".gif");
-				GetScreeny(szFilePath, L"image/gif", 50);
+				GetScreeny(hDesktop, szFilePath, L"image/gif", 50);
 				break;
 			case 3:
 				PathAddExtension(szFilePath, L".bmp");
-				GetScreeny(szFilePath, L"image/bmp", 50);
+				GetScreeny(hDesktop, szFilePath, L"image/bmp", 50);
 				break;
 			}
-
-			// static変数の内容に従いキャプチャーを実行
 		}
 		break;
 	case WM_COMMAND:
